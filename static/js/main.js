@@ -61,7 +61,9 @@
 
         const target = tab.dataset.section;
         document.querySelectorAll(".result-section").forEach((sec) => {
-          sec.classList.toggle("active", sec.id === `section-${target}`);
+          const isTarget = sec.id === `section-${target}`;
+          sec.classList.toggle("active", isTarget);
+          sec.classList.toggle("hidden", !isTarget);
         });
       });
     });
