@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — StudyGenAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <i class="fas fa-brain" aria-hidden="true"></i> StudyGenAI
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('generator') }}">Study Generator</a></li>
+      <li><a href="{{ url_for('assistant') }}">AI Assistant</a></li>
+      <li><a href="{{ url_for('dashboard') }}" class="active">Dashboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="page-main container">
+  <div class="page-header">
+    <h1>
+      <i class="fas fa-chart-bar" aria-hidden="true"></i>
+      {% if student_info.name and student_info.name != 'Student' %}
+        {{ student_info.name }}'s Dashboard
+      {% else %}
+        Study Dashboard
+      {% endif %}
+    </h1>
+    <p class="text-muted">
+      <i class="fas fa-info-circle"></i> Session-based data — progress resets when you close the browser.
+    </p>
+  </div>
+
+  {% if not study_result %}
+  <!-- ── No data state ─────────────────────────────────────────── -->
+  <div class="empty-state card">
+    <i class="fas fa-book-open fa-3x text-muted" aria-hidden="true"></i>
+    <h2>No Study Data Yet</h2>
+    <p>Generate your first set of study resources to see your progress dashboard.</p>
+    <a href="{{ url_for('generator') }}" class="btn btn-primary">
+      <i class="fas fa-magic"></i> Generate Study Material
+    </a>
+  </div>
+  {% else %}
+
+  <!-- ── Progress cards ─────────────────────────────────────────── -->
+  <section class="stats-grid" aria-label="Progress overview">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-book" aria-hidden="true"></i></div>
+      <div class="stat-value">1</div>
+      <div class="stat-label">Material Uploaded</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-list" aria-hidden="true"></i></div>
+      <div class="stat-value">{{ study_result.important_topics | length }}</div>
+      <div class="stat-label">Topics Identified</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-layer-group" aria-hidden="true"></i></div>
+      <div class="stat-value">{{ study_result.flashcards | length }}</div>
+      <div class="stat-label">Flashcards Created</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-tasks" aria-hidden="true"></i></div>
+      <div class="stat-value">
+        {% if quiz_scores %}
+          {{ quiz_scores[-1] }}%
+        {% else %}
+          —
+        {% endif %}
+      </div>
+      <div class="stat-label">Latest Quiz Score</div>
+    </div>
+  </section>
+
+  <!-- ── Quiz score history ─────────────────────────────────────── -->
+  {% if quiz_scores %}
+  <div class="card mt-2" aria-labelledby="scoreHistoryHeading">
+    <h2 id="scoreHistoryHeading"><i class="fas fa-chart-line" aria-hidden="true"></i> Quiz Score History</h2>
+    <div class="score-history">
+      {% for score in quiz_scores %}
+      <div class="score-bar-wrap">
+        <div class="score-bar" style="height: {{ score }}%;"
+             role="img" aria-label="Score {{ score }}%">
+        </div>
+        <span class="score-label-sm">{{ score }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="text-muted small mt-1">
+      Average: <strong>{{ (quiz_scores | sum / quiz_scores | length) | round(1) }}%</strong>
+      across {{ quiz_scores | length }} quiz attempt(s).
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- ── Topic priority breakdown ──────────────────────────────── -->
+  {% if study_result.important_topics %}
+  <div class="card mt-2" aria-labelledby="topicsHeading">
+    <h2 id="topicsHeading"><i class="fas fa-fire" aria-hidden="true"></i> Topic Overview</h2>
+    <div class="topic-priority-grid">
+      {% set high = study_result.important_topics | selectattr('priority','eq','High') | list %}
+      {% set medium = study_result.important_topics | selectattr('priority','eq','Medium') | list %}
+      {% set low = study_result.important_topics | selectattr('priority','eq','Low') | list %}
+      <div class="tpg-col">
+        <h4>🔴 High Priority ({{ high | length }})</h4>
+        <ul>{% for t in high %}<li>{{ t.topic }}</li>{% endfor %}</ul>
+      </div>
+      <div class="tpg-col">
+        <h4>🟡 Medium Priority ({{ medium | length }})</h4>
+        <ul>{% for t in medium %}<li>{{ t.topic }}</li>{% endfor %}</ul>
+      </div>
+      <div class="tpg-col">
+        <h4>🟢 Low Priority ({{ low | length }})</h4>
+        <ul>{% for t in low %}<li>{{ t.topic }}</li>{% endfor %}</ul>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── AI Recommendations ─────────────────────────────────────── -->
+  {% if study_result.study_recommendations %}
+  <div class="card mt-2" aria-labelledby="recsHeading">
+    <h2 id="recsHeading">
+      <i class="fas fa-lightbulb" aria-hidden="true"></i> AI Recommendations
+    </h2>
+    <ul class="rec-list">
+      {% for rec in study_result.study_recommendations %}
+      <li>{{ rec }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- ── Quick actions ─────────────────────────────────────────── -->
+  <div class="quick-actions card mt-2" aria-labelledby="actionsHeading">
+    <h2 id="actionsHeading"><i class="fas fa-bolt" aria-hidden="true"></i> Quick Actions</h2>
+    <div class="qa-grid">
+      <a href="#" onclick="history.back(); return false;" class="qa-btn">
+        <i class="fas fa-eye"></i> View Results
+      </a>
+      <a href="{{ url_for('assistant') }}" class="qa-btn">
+        <i class="fas fa-robot"></i> Ask AI Assistant
+      </a>
+      <a href="{{ url_for('generator') }}" class="qa-btn">
+        <i class="fas fa-upload"></i> New Material
+      </a>
+    </div>
+  </div>
+
+  {% endif %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-copy">&copy; 2024 StudyGenAI — Powered by IBM watsonx.ai &amp; Grok</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

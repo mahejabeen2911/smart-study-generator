@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Assistant — StudyGenAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <i class="fas fa-brain" aria-hidden="true"></i> StudyGenAI
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('generator') }}">Study Generator</a></li>
+      <li><a href="{{ url_for('assistant') }}" class="active">AI Assistant</a></li>
+      <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="page-main container">
+  <div class="page-header">
+    <h1><i class="fas fa-robot" aria-hidden="true"></i> AI Study Assistant</h1>
+    <p>Ask questions, get explanations, and request practice problems from your personal AI tutor.</p>
+  </div>
+
+  <div class="chat-layout">
+    <!-- ── Sidebar: Quick prompts ─────────────────────────────────── -->
+    <aside class="chat-sidebar" aria-label="Quick prompts">
+      <h3><i class="fas fa-bolt" aria-hidden="true"></i> Quick Prompts</h3>
+      <div class="quick-prompts">
+        <button class="qp-btn" data-prompt="Explain the main concepts from my study material in simple words.">
+          <i class="fas fa-book-open"></i> Explain key concepts
+        </button>
+        <button class="qp-btn" data-prompt="Give me 5 practice questions on the topic I'm studying.">
+          <i class="fas fa-tasks"></i> Practice questions
+        </button>
+        <button class="qp-btn" data-prompt="Give me a simple example to help me understand this topic better.">
+          <i class="fas fa-lightbulb"></i> Give me an example
+        </button>
+        <button class="qp-btn" data-prompt="Explain this topic like I'm a complete beginner.">
+          <i class="fas fa-user-graduate"></i> Beginner explanation
+        </button>
+        <button class="qp-btn" data-prompt="What are the most important points I should remember for my exam?">
+          <i class="fas fa-star"></i> Key exam points
+        </button>
+        <button class="qp-btn" data-prompt="Summarize what I should study today.">
+          <i class="fas fa-calendar-day"></i> Today's study focus
+        </button>
+      </div>
+
+      <div class="sidebar-info">
+        <h4><i class="fas fa-info-circle" aria-hidden="true"></i> Tips</h4>
+        <ul>
+          <li>Be specific in your questions for better answers.</li>
+          <li>Mention your topic for targeted explanations.</li>
+          <li>Ask for examples to understand difficult concepts.</li>
+          <li>Request practice questions to test yourself.</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-info">
+        <h4><i class="fas fa-microchip" aria-hidden="true"></i> Powered by</h4>
+        <span class="badge badge-grok"><i class="fas fa-robot"></i> Grok API</span>
+      </div>
+    </aside>
+
+    <!-- ── Main chat area ─────────────────────────────────────────── -->
+    <div class="chat-main" aria-label="Chat conversation">
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Chat messages">
+
+        <!-- Welcome message -->
+        <div class="message bot-message">
+          <div class="msg-avatar" aria-hidden="true"><i class="fas fa-robot"></i></div>
+          <div class="msg-bubble">
+            <p><strong>Hello! I'm your StudyGenAI Assistant.</strong></p>
+            <p>I'm here to help you understand your study material, answer questions, and help you prepare for your exams.</p>
+            <p>What would you like to know?</p>
+            <p class="msg-time">Now</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="typing-indicator hidden" id="typingIndicator" aria-live="polite" aria-label="Assistant is typing">
+        <div class="msg-avatar" aria-hidden="true"><i class="fas fa-robot"></i></div>
+        <div class="msg-bubble">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <!-- Error message area -->
+      <div class="chat-error hidden" id="chatError" role="alert"></div>
+
+      <!-- Input area -->
+      <form class="chat-input-area" id="chatInputForm" novalidate>
+        <label for="chatInput" class="sr-only">Your message</label>
+        <textarea id="chatInput" name="message" class="chat-input"
+                  placeholder="Ask anything about your study material…"
+                  rows="2" maxlength="1000"
+                  aria-describedby="chatCharCount"></textarea>
+        <div class="chat-input-actions">
+          <span id="chatCharCount" class="text-muted small">0 / 1000</span>
+          <button type="submit" class="btn btn-primary" id="chatSendBtn" aria-label="Send message">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i> Send
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-copy">&copy; 2024 StudyGenAI — Powered by IBM watsonx.ai &amp; Grok</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+/* ── Chat functionality ─────────────────────────────────────────── */
+(function () {
+  "use strict";
+
+  const form       = document.getElementById("chatInputForm");
+  const input      = document.getElementById("chatInput");
+  const sendBtn    = document.getElementById("chatSendBtn");
+  const messages   = document.getElementById("chatMessages");
+  const typing     = document.getElementById("typingIndicator");
+  const errorBox   = document.getElementById("chatError");
+  const charCount  = document.getElementById("chatCharCount");
+  const qpBtns     = document.querySelectorAll(".qp-btn");
+
+  /* Character counter */
+  input.addEventListener("input", () => {
+    charCount.textContent = `${input.value.length} / 1000`;
+  });
+
+  /* Quick prompt buttons */
+  qpBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      input.value = btn.dataset.prompt;
+      charCount.textContent = `${input.value.length} / 1000`;
+      input.focus();
+    });
+  });
+
+  /* Enter to send (Shift+Enter for newline) */
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendMessage();
+  });
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendMessage("user", text);
+    input.value = "";
+    charCount.textContent = "0 / 1000";
+    setLoading(true);
+    hideError();
+
+    fetch("/assistant/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setLoading(false);
+        if (data.error) {
+          showError(data.error);
+        } else {
+          appendMessage("bot", data.response);
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        showError("Connection error. Please check your internet and try again.");
+      });
+  }
+
+  function appendMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = `message ${role === "user" ? "user-message" : "bot-message"}`;
+
+    const avatar = document.createElement("div");
+    avatar.className = "msg-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.innerHTML = role === "user"
+      ? '<i class="fas fa-user"></i>'
+      : '<i class="fas fa-robot"></i>';
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+
+    // Simple markdown-like: convert newlines and **bold**
+    const formatted = text
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br />");
+
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    bubble.innerHTML = `<p>${formatted}</p><p class="msg-time">${time}</p>`;
+
+    if (role === "user") {
+      div.appendChild(bubble);
+      div.appendChild(avatar);
+    } else {
+      div.appendChild(avatar);
+      div.appendChild(bubble);
+    }
+
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function setLoading(state) {
+    sendBtn.disabled = state;
+    input.disabled = state;
+    typing.classList.toggle("hidden", !state);
+    if (state) messages.scrollTop = messages.scrollHeight;
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.remove("hidden");
+    setTimeout(() => hideError(), 8000);
+  }
+
+  function hideError() {
+    errorBox.classList.add("hidden");
+    errorBox.textContent = "";
+  }
+})();
+</script>
+</body>
+</html>

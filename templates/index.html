@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyGenAI — Smart Study Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<!-- ── Navigation ─────────────────────────────────────────────────── -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-container">
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <i class="fas fa-brain" aria-hidden="true"></i> StudyGenAI
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{ url_for('index') }}" class="active">Home</a></li>
+      <li><a href="{{ url_for('generator') }}">Study Generator</a></li>
+      <li><a href="{{ url_for('assistant') }}">AI Assistant</a></li>
+      <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────── -->
+<section class="hero" aria-labelledby="heroHeading">
+  <div class="hero-content">
+    <span class="badge">Powered by IBM watsonx.ai &amp; Grok</span>
+    <h1 id="heroHeading">Study Smarter.<br />Prepare Better.</h1>
+    <p class="hero-sub">
+      Turn your notes into summaries, flashcards, quizzes and
+      personalized study plans with AI.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('generator') }}" class="btn btn-primary">
+        <i class="fas fa-rocket" aria-hidden="true"></i> Start Learning
+      </a>
+      <a href="{{ url_for('generator') }}" class="btn btn-outline">
+        <i class="fas fa-upload" aria-hidden="true"></i> Try Study Generator
+      </a>
+    </div>
+  </div>
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hero-card">
+      <div class="hc-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="hc-text">
+        <div class="hc-title">Study Material</div>
+        <div class="hc-bar"><div class="hc-fill" style="width:80%"></div></div>
+      </div>
+    </div>
+    <div class="hero-arrow"><i class="fas fa-chevron-down"></i></div>
+    <div class="hero-card">
+      <div class="hc-icon"><i class="fas fa-brain"></i></div>
+      <div class="hc-text">
+        <div class="hc-title">AI Processing…</div>
+        <div class="hc-bar"><div class="hc-fill animated" style="width:60%"></div></div>
+      </div>
+    </div>
+    <div class="hero-arrow"><i class="fas fa-chevron-down"></i></div>
+    <div class="hero-card">
+      <div class="hc-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="hc-text">
+        <div class="hc-title">Personalized Plan</div>
+        <div class="hc-bar"><div class="hc-fill" style="width:95%;background:var(--success)"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Feature Cards ──────────────────────────────────────────────── -->
+<section class="features" aria-labelledby="featuresHeading">
+  <div class="container">
+    <h2 id="featuresHeading" class="section-title">Everything You Need to Study Smarter</h2>
+    <p class="section-sub">One platform. All your study tools. Powered by AI.</p>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <div class="fc-icon"><i class="fas fa-file-alt" aria-hidden="true"></i></div>
+        <h3>Smart Summaries</h3>
+        <p>Get concise, easy-to-understand summaries with key concepts, definitions, and takeaways extracted from your material.</p>
+      </article>
+      <article class="feature-card">
+        <div class="fc-icon"><i class="fas fa-layer-group" aria-hidden="true"></i></div>
+        <h3>AI Flashcards</h3>
+        <p>Automatically generated flashcards to reinforce your memory. Flip through them at your own pace.</p>
+      </article>
+      <article class="feature-card">
+        <div class="fc-icon"><i class="fas fa-tasks" aria-hidden="true"></i></div>
+        <h3>Practice Quizzes</h3>
+        <p>MCQ quizzes generated from your notes with explanations and instant scoring to test your understanding.</p>
+      </article>
+      <article class="feature-card">
+        <div class="fc-icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></div>
+        <h3>Progress Tracking</h3>
+        <p>Track quiz scores, identify weak topics, and monitor your improvement over time.</p>
+      </article>
+      <article class="feature-card">
+        <div class="fc-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>
+        <h3>AI Study Assistant</h3>
+        <p>Ask questions, get concept explanations, and request practice problems from your personal AI tutor.</p>
+      </article>
+      <article class="feature-card">
+        <div class="fc-icon"><i class="fas fa-calendar-alt" aria-hidden="true"></i></div>
+        <h3>Personalized Study Plans</h3>
+        <p>Receive a day-by-day study schedule tailored to your exam date, study hours, and weak topics.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ───────────────────────────────────────────────── -->
+<section class="how-it-works" aria-labelledby="howHeading">
+  <div class="container">
+    <h2 id="howHeading" class="section-title">How It Works</h2>
+    <p class="section-sub">Four simple steps to smarter studying.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Upload Material</h3>
+        <p>Upload your PDF, TXT file, or paste your notes directly into the platform.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>AI Analysis</h3>
+        <p>Our IBM watsonx.ai &amp; Grok-powered agent analyzes your material and identifies key topics.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Study Resources</h3>
+        <p>Get a complete set of study tools: summary, flashcards, quiz, and a personalized study plan.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h3>Track &amp; Improve</h3>
+        <p>Take quizzes, identify weak areas, and let the AI recommend your next study steps.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────────────── -->
+<section class="cta-section" aria-labelledby="ctaHeading">
+  <div class="container">
+    <h2 id="ctaHeading">Ready to Transform Your Study Sessions?</h2>
+    <p>Join thousands of students who study smarter with AI.</p>
+    <a href="{{ url_for('generator') }}" class="btn btn-primary btn-lg">
+      <i class="fas fa-rocket" aria-hidden="true"></i> Get Started — It's Free
+    </a>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-brand">
+      <i class="fas fa-brain" aria-hidden="true"></i> StudyGenAI
+    </div>
+    <p class="footer-tag">"Turn your study material into a personalized learning plan."</p>
+    <p class="footer-tech">
+      Powered by <strong>IBM watsonx.ai</strong> · <strong>IBM Langflow</strong> · <strong>Grok API</strong>
+    </p>
+    <p class="footer-copy">&copy; 2024 StudyGenAI. Built for students, by students.</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

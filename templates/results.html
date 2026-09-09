@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Results — StudyGenAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <i class="fas fa-brain" aria-hidden="true"></i> StudyGenAI
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('generator') }}">Study Generator</a></li>
+      <li><a href="{{ url_for('assistant') }}">AI Assistant</a></li>
+      <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="page-main container">
+
+  <!-- ── Header ──────────────────────────────────────────────────── -->
+  <div class="results-header">
+    <div>
+      <h1><i class="fas fa-check-circle text-success" aria-hidden="true"></i> Study Resources Generated</h1>
+      {% if student_info.name and student_info.name != 'Student' %}
+        <p>Great job, <strong>{{ student_info.name }}</strong>! Here are your personalized study resources.</p>
+      {% else %}
+        <p>Here are your personalized study resources, ready to help you prepare.</p>
+      {% endif %}
+    </div>
+    <div class="results-meta">
+      {% if ibm_used %}
+        <span class="badge badge-ibm"><i class="fas fa-cloud"></i> IBM watsonx.ai</span>
+      {% else %}
+        <span class="badge badge-grok"><i class="fas fa-robot"></i> Grok AI</span>
+      {% endif %}
+      {% if result.get('demo_mode') %}
+        <span class="badge badge-warn"><i class="fas fa-exclamation-triangle"></i> Demo Mode</span>
+      {% endif %}
+      <a href="{{ url_for('generator') }}" class="btn btn-outline btn-sm">
+        <i class="fas fa-redo"></i> New Material
+      </a>
+    </div>
+  </div>
+
+  {% if result.get('demo_mode') %}
+  <div class="alert alert-warn" role="alert">
+    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+    <strong>Demo Mode:</strong> Add your <code>GROQ_API_KEY</code> (and optionally IBM credentials) to the <code>.env</code> file to enable real AI-powered study generation.
+  </div>
+  {% endif %}
+
+  <!-- ── Tab navigation ─────────────────────────────────────────── -->
+  <div class="results-tabs" role="tablist" aria-label="Study resource sections">
+    <button class="rtab active" role="tab" aria-selected="true" data-section="summary">
+      <i class="fas fa-file-alt"></i> Summary
+    </button>
+    <button class="rtab" role="tab" aria-selected="false" data-section="topics">
+      <i class="fas fa-list"></i> Topics
+    </button>
+    <button class="rtab" role="tab" aria-selected="false" data-section="flashcards">
+      <i class="fas fa-layer-group"></i> Flashcards
+      {% if result.flashcards %}<span class="tab-count">{{ result.flashcards|length }}</span>{% endif %}
+    </button>
+    <button class="rtab" role="tab" aria-selected="false" data-section="quiz">
+      <i class="fas fa-tasks"></i> Quiz
+      {% if result.quiz %}<span class="tab-count">{{ result.quiz|length }}</span>{% endif %}
+    </button>
+    <button class="rtab" role="tab" aria-selected="false" data-section="plan">
+      <i class="fas fa-calendar-alt"></i> Study Plan
+    </button>
+  </div>
+
+  <!-- ── Summary Section ─────────────────────────────────────────── -->
+  <section class="result-section active" id="section-summary" aria-label="Study Summary">
+
+    <div class="card mb-2">
+      <h2><i class="fas fa-book-open" aria-hidden="true"></i> Overview</h2>
+      <p>{{ result.summary or "Summary not available." }}</p>
+    </div>
+
+    {% if result.key_concepts %}
+    <div class="card mb-2">
+      <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Key Concepts</h2>
+      <div class="concept-grid">
+        {% for concept in result.key_concepts %}
+        <div class="concept-card">
+          <h4>{{ concept.title }}</h4>
+          <p>{{ concept.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if result.important_definitions %}
+    <div class="card mb-2">
+      <h2><i class="fas fa-book" aria-hidden="true"></i> Important Definitions</h2>
+      <dl class="definition-list">
+        {% for item in result.important_definitions %}
+        <div class="def-item">
+          <dt>{{ item.term }}</dt>
+          <dd>{{ item.definition }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </div>
+    {% endif %}
+
+    {% if result.formulas %}
+    <div class="card mb-2">
+      <h2><i class="fas fa-square-root-alt" aria-hidden="true"></i> Formulas</h2>
+      <div class="formula-list">
+        {% for f in result.formulas %}
+        <div class="formula-item">
+          <span class="formula-name">{{ f.name }}</span>
+          <code class="formula-code">{{ f.formula }}</code>
+          {% if f.description %}<p class="text-muted small">{{ f.description }}</p>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if result.key_takeaways %}
+    <div class="card">
+      <h2><i class="fas fa-star" aria-hidden="true"></i> Key Takeaways</h2>
+      <ul class="takeaway-list">
+        {% for point in result.key_takeaways %}
+        <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  </section>
+
+  <!-- ── Important Topics Section ──────────────────────────────── -->
+  <section class="result-section hidden" id="section-topics" aria-label="Important Topics">
+    <div class="card">
+      <h2><i class="fas fa-fire" aria-hidden="true"></i> Important Topics</h2>
+      {% if result.important_topics %}
+      <div class="topic-list">
+        {% for topic in result.important_topics %}
+        <div class="topic-item priority-{{ topic.priority|lower }}">
+          <div class="topic-header">
+            <span class="topic-name">{{ topic.topic }}</span>
+            <span class="priority-badge">
+              {% if topic.priority == 'High' %}🔴{% elif topic.priority == 'Medium' %}🟡{% else %}🟢{% endif %}
+              {{ topic.priority }} Priority
+            </span>
+          </div>
+          <p class="topic-reason">{{ topic.reason }}</p>
+          <div class="topic-meta">
+            <span><i class="fas fa-clock" aria-hidden="true"></i> Est. {{ topic.estimated_minutes }} min</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted">No topics were identified. Try uploading more detailed material.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ── Flashcards Section ─────────────────────────────────────── -->
+  <section class="result-section hidden" id="section-flashcards" aria-label="Flashcards">
+    <div class="card">
+      <h2><i class="fas fa-layer-group" aria-hidden="true"></i> Flashcards</h2>
+      {% if result.flashcards %}
+      <div class="flashcard-widget">
+        <div class="fc-counter" aria-live="polite">
+          Card <span id="fcCurrent">1</span> of <span id="fcTotal">{{ result.flashcards|length }}</span>
+        </div>
+        <div class="flashcard-area">
+          <div class="flashcard" id="flashcard" tabindex="0" role="button"
+               aria-label="Flashcard. Press Enter or Space to flip."
+               aria-describedby="flipHint">
+            <div class="fc-front">
+              <div class="fc-label">Question</div>
+              <div class="fc-content" id="fcQuestion">{{ result.flashcards[0].question if result.flashcards }}</div>
+            </div>
+            <div class="fc-back">
+              <div class="fc-label">Answer</div>
+              <div class="fc-content" id="fcAnswer">{{ result.flashcards[0].answer if result.flashcards }}</div>
+            </div>
+          </div>
+          <p id="flipHint" class="text-muted small text-center">Click the card (or press Enter) to flip it.</p>
+        </div>
+        <div class="fc-controls">
+          <button type="button" class="btn btn-outline" id="fcPrev" aria-label="Previous flashcard">
+            <i class="fas fa-chevron-left"></i> Prev
+          </button>
+          <button type="button" class="btn btn-outline" id="fcFlip" aria-label="Flip card">
+            <i class="fas fa-sync-alt"></i> Flip
+          </button>
+          <button type="button" class="btn btn-outline" id="fcNext" aria-label="Next flashcard">
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-muted">No flashcards were generated. Please upload more detailed study material.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ── Quiz Section ───────────────────────────────────────────── -->
+  <section class="result-section hidden" id="section-quiz" aria-label="Practice Quiz">
+    <div class="card">
+      <h2><i class="fas fa-tasks" aria-hidden="true"></i> Practice Quiz</h2>
+      {% if result.quiz %}
+
+      <!-- Quiz form -->
+      <div id="quizContainer">
+        <p class="text-muted mb-2">
+          <strong>{{ result.quiz|length }} questions</strong> — Select the best answer for each question.
+        </p>
+        <form id="quizForm" novalidate>
+          {% for q in result.quiz %}
+          {% set i = loop.index0 %}
+          <div class="quiz-question" data-index="{{ i }}" data-correct="{{ q.answer }}" data-topic="{{ q.topic if q.topic is defined else 'General' }}">
+            <p class="qnum">Q{{ loop.index }}. <span class="qtext">{{ q.question }}</span></p>
+            <div class="options" role="radiogroup" aria-label="Options for question {{ loop.index }}">
+              {% for opt in q.options %}
+              <label class="option-label">
+                <input type="radio" name="q{{ i }}" value="{{ opt }}" />
+                <span class="option-text">{{ opt }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <div class="quiz-feedback hidden" aria-live="polite">
+              <div class="feedback-text"></div>
+              <div class="explanation text-muted small">{{ q.explanation }}</div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <button type="button" class="btn btn-primary" id="submitQuiz">
+            <i class="fas fa-check-circle"></i> Submit Quiz
+          </button>
+        </form>
+      </div>
+
+      <!-- Quiz results (hidden until submitted) -->
+      <div id="quizResults" class="quiz-results hidden" aria-live="polite">
+        <div class="score-card">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-label" id="scoreLabel">—</div>
+        </div>
+        <div class="score-breakdown">
+          <span class="sb-item correct"><i class="fas fa-check"></i> <span id="correctCount">0</span> Correct</span>
+          <span class="sb-item wrong"><i class="fas fa-times"></i> <span id="wrongCount">0</span> Wrong</span>
+          <span class="sb-item total"><i class="fas fa-list"></i> <span id="totalCount">0</span> Total</span>
+        </div>
+        <div id="weakTopicsBox" class="hidden">
+          <h3><i class="fas fa-exclamation-circle text-warn"></i> Weak Topics</h3>
+          <ul id="weakTopicsList"></ul>
+        </div>
+        <div id="strongTopicsBox" class="hidden">
+          <h3><i class="fas fa-check-circle text-success"></i> Strong Topics</h3>
+          <ul id="strongTopicsList"></ul>
+        </div>
+        <div id="aiRecommendation" class="rec-box hidden"></div>
+        <button type="button" class="btn btn-outline" id="retryQuiz">
+          <i class="fas fa-redo"></i> Retry Quiz
+        </button>
+      </div>
+
+      {% else %}
+      <p class="text-muted">No quiz was generated. Please upload more detailed study material.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ── Study Plan Section ─────────────────────────────────────── -->
+  <section class="result-section hidden" id="section-plan" aria-label="Personalized Study Plan">
+    <div class="card">
+      <h2><i class="fas fa-calendar-alt" aria-hidden="true"></i> Personalized Study Plan</h2>
+
+      {% if student_info.exam_date %}
+      <div class="plan-meta">
+        <span><i class="fas fa-calendar" aria-hidden="true"></i> Exam: <strong>{{ student_info.exam_date }}</strong></span>
+        <span><i class="fas fa-clock" aria-hidden="true"></i> Study: <strong>{{ student_info.study_hours }} hrs/day</strong></span>
+        <span><i class="fas fa-user-graduate" aria-hidden="true"></i> Level: <strong>{{ student_info.prep_level }}</strong></span>
+      </div>
+      {% endif %}
+
+      {% if result.important_topics %}
+      <div class="study-plan-grid" id="studyPlanGrid">
+        {% set ns = namespace(day=1) %}
+        {% for topic in result.important_topics %}
+        <div class="plan-day-card">
+          <div class="plan-day-header">
+            <span class="day-num">Day {{ ns.day }}</span>
+            <span class="priority-badge priority-{{ topic.priority|lower }}">{{ topic.priority }}</span>
+          </div>
+          <h4>{{ topic.topic }}</h4>
+          <p class="text-muted"><i class="fas fa-clock"></i> {{ topic.estimated_minutes }} minutes</p>
+          <ul class="plan-tasks">
+            <li><i class="fas fa-book-open"></i> Read summary section</li>
+            <li><i class="fas fa-layer-group"></i> Review flashcards</li>
+            <li><i class="fas fa-tasks"></i> Attempt 5–10 practice questions</li>
+            {% if topic.priority == 'High' %}
+            <li><i class="fas fa-redo"></i> Revisit after 2 days</li>
+            {% endif %}
+          </ul>
+        </div>
+        {% set ns.day = ns.day + 1 %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if result.study_recommendations %}
+      <div class="recommendations mt-2">
+        <h3><i class="fas fa-lightbulb" aria-hidden="true"></i> AI Recommendations</h3>
+        <ul class="rec-list">
+          {% for rec in result.study_recommendations %}
+          <li>{{ rec }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-copy">&copy; 2024 StudyGenAI — Powered by IBM watsonx.ai &amp; Grok</p>
+  </div>
+</footer>
+
+<!-- Pass flashcard data to JavaScript -->
+<script>
+  const FLASHCARDS = {{ result.flashcards | tojson }};
+  const QUIZ_DATA  = {{ result.quiz | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/flashcards.js') }}"></script>
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</body>
+</html>
