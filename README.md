@@ -2,7 +2,7 @@
 
 > **"Turn your study material into a personalized learning plan."**
 
-An AI-powered full-stack web application that helps students convert scattered study material into useful learning resources — summaries, flashcards, quizzes, and personalized study plans — using **IBM watsonx.ai**, **IBM Langflow / Orchestrate**, and the **Grok (Groq) API**.
+An AI-powered full-stack web application that helps students convert scattered study material into useful learning resources — summaries, flashcards, quizzes, and personalized study plans — using **IBM watsonx.ai**, **IBM Langflow / Orchestrate**, and the **Groq API**.
 
 ---
 
@@ -15,7 +15,7 @@ Flask Application  (app.py)
    ↓
 AI Orchestration Layer
    ↙              ↓              ↘
-IBM Langflow   IBM watsonx.ai   Grok API
+IBM Langflow   IBM watsonx.ai   Groq API
 (Orchestrate)  (Granite model)  (Llama3)
    ↓              ↓              ↘
          Personalized Study Resources
@@ -35,10 +35,10 @@ IBM Langflow   IBM watsonx.ai   Grok API
 | **MCQ Quiz** | Multiple-choice quiz with explanations and scoring |
 | **Weak Topic Detection** | Identifies topics where the student needs more practice |
 | **Personalized Study Plan** | Day-by-day schedule based on exam date and study hours |
-| **AI Study Assistant** | Conversational chatbot for concept explanations (Grok) |
+| **AI Study Assistant** | Conversational chatbot for concept explanations (Groq) |
 | **Progress Dashboard** | Session-based quiz history and topic overview |
 | **IBM AI Integration** | watsonx.ai Granite model + Langflow agentic workflow |
-| **Grok API Integration** | Conversational study assistant |
+| **Groq API Integration** | Conversational study assistant |
 
 ---
 
@@ -60,7 +60,7 @@ IBM Langflow   IBM watsonx.ai   Grok API
 **AI Services**
 - IBM watsonx.ai (Granite model — primary study generator)
 - IBM Langflow / IBM Orchestrate (agentic workflow orchestration)
-- Grok / Groq API (AI Study Assistant + fallback generator)
+- Groq API (AI Study Assistant + fallback generator)
 
 ---
 
@@ -155,7 +155,7 @@ Then open your browser at: **http://localhost:5000**
 
 ## Configuring API Keys
 
-### Grok / Groq API (Required for AI features)
+### Groq API (Required for AI features)
 
 1. Go to [https://console.groq.com/](https://console.groq.com/) and create a free account.
 2. Generate an API key.
@@ -218,7 +218,7 @@ Student uploads study material
           ↓ (fallback)
   IBM watsonx.ai Granite model (if configured)
           ↓ (fallback)
-  Grok / Groq Llama3 model
+        Groq Llama3 model
           ↓
   AI generates JSON response:
     - Summary, Key Concepts, Definitions, Formulas
@@ -233,7 +233,7 @@ Student uploads study material
           ↓
   Personalized study plan generated
           ↓
-  AI Study Assistant available for follow-up (Grok)
+        AI Study Assistant available for follow-up (Groq)
 ```
 
 ---
@@ -246,7 +246,7 @@ Student uploads study material
 | `/generator` | GET | Upload page |
 | `/generate-study` | POST | Process material & generate resources |
 | `/assistant` | GET | AI Study Assistant page |
-| `/assistant/chat` | POST | Send message to Grok assistant |
+| `/assistant/chat` | POST | Send message to Groq assistant |
 | `/dashboard` | GET | Progress dashboard |
 | `/quiz/submit` | POST | Submit quiz answers |
 | `/health` | GET | Health check (`{"status":"ok"}`) |
@@ -302,7 +302,7 @@ The project was built in phases for beginner-friendliness:
 6. MCQ quiz generation
 7. Quiz scoring and weak-topic detection
 8. Personalized study plan
-9. Grok AI Study Assistant
+9. Groq AI Study Assistant
 10. Progress dashboard
 11. UI polish and error handling
 
@@ -328,4 +328,4 @@ MIT License — free for personal, educational, and commercial use.
 ---
 
 *Built for college hackathons, GitHub portfolios, and resumes.*  
-*Demonstrates: IBM watsonx.ai · IBM Langflow / Orchestrate · Grok API · Agentic AI workflow · Flask · Responsive web design*
+*Demonstrates: IBM watsonx.ai · IBM Langflow / Orchestrate · Groq API · Agentic AI workflow · Flask · Responsive web design*

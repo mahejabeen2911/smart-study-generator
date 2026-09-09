@@ -1,6 +1,6 @@
 """
 Study Generator Service
-Fallback AI study content generator using the Grok/Groq API.
+Fallback AI study content generator using the Groq API.
 Used when IBM credentials are not configured.
 """
 
@@ -225,7 +225,7 @@ class StudyGenerator:
                 },
                 {
                     "question": "Which AI services does StudyGenAI use?",
-                    "answer": "IBM watsonx.ai, IBM Langflow/Orchestrate, and the Grok (Groq) API.",
+                    "answer": "IBM watsonx.ai, IBM Langflow/Orchestrate, and the Groq API.",
                     "topic": "Architecture",
                 },
             ],

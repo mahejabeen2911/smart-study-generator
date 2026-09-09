@@ -1,6 +1,6 @@
 """
-Grok Service
-Conversational AI assistant powered by the xAI Grok API.
+Groq Service
+Conversational AI assistant powered by the Groq API.
 Used for the AI Study Assistant, concept explanations, and follow-up questions.
 """
 
@@ -79,7 +79,7 @@ class GrokService:
             return completion.choices[0].message.content.strip()
 
         except Exception as exc:
-            logger.error("Grok API error: %s", exc)
+            logger.error("Groq API error: %s", exc)
             error_msg = str(exc).lower()
             if "rate" in error_msg or "429" in error_msg:
                 return "The AI assistant is busy right now (rate limit). Please wait a moment and try again."
